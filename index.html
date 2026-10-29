@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AI Prompt Builder</title>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; margin: 0; background: #f4f6fa; color: #1f2a44; }
+  header { background: #1f2a44; color: #fff; padding: 26px 20px; text-align: center; }
+  header h1 { margin: 0 0 6px; font-size: 28px; }
+  header p { margin: 0; opacity: .85; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px; }
+  .card { background: #fff; border-radius: 10px; padding: 18px; margin-bottom: 16px; box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  label { display: block; font-weight: bold; margin: 12px 0 4px; font-size: 14px; }
+  input, select, textarea { width: 100%; padding: 10px; font-size: 15px; border: 1px solid #c8cfdd; border-radius: 8px; box-sizing: border-box; font-family: inherit; }
+  textarea { min-height: 70px; }
+  .row { display: flex; gap: 12px; }
+  .row > div { flex: 1; }
+  button, .btn { background: #1f2a44; color: #fff; border: 0; padding: 10px 16px; border-radius: 6px; cursor: pointer; font-size: 15px; text-decoration: none; display: inline-block; margin: 6px 8px 0 0; }
+  button:hover, .btn:hover { background: #33446e; }
+  .btn.alt { background: #5b6b8c; }
+  #output { background: #f4f6fa; padding: 14px; border-radius: 8px; white-space: pre-wrap; font-family: Consolas, monospace; font-size: 14px; min-height: 80px; }
+  footer { text-align: center; padding: 16px; color: #5b6b8c; font-size: 14px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>AI Prompt Builder</h1>
+  <p>Build a structured prompt in seconds: Role, Task, Context, Format, Constraints</p>
+</header>
+
+<div class="wrap">
+  <div class="card">
+    <label>What do you need?</label>
+    <select id="task">
+      <option>Write a professional email</option>
+      <option>Create a weekly status report</option>
+      <option>Summarize meeting notes into action items</option>
+      <option>Break a project into tasks</option>
+      <option>Explain code for a beginner</option>
+      <option>Write a LinkedIn post</option>
+    </select>
+
+    <label>Topic or details</label>
+    <textarea id="topic" placeholder="Example: Project Tracker I built in Google Sheets"></textarea>
+
+    <div class="row">
+      <div>
+        <label>Audience</label>
+        <input id="audience" placeholder="Example: recruiters">
+      </div>
+      <div>
+        <label>Tone</label>
+        <select id="tone">
+          <option>Professional</option><option>Friendly</option>
+          <option>Formal</option><option>Simple and clear</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="row">
+      <div>
+        <label>Format</label>
+        <select id="format">
+          <option>Short paragraphs</option><option>Bullet points</option>
+          <option>Table</option><option>Numbered steps</option>
+        </select>
+      </div>
+      <div>
+        <label>Max words</label>
+        <input id="words" type="number" value="150" min="20">
+      </div>
+    </div>
+
+    <button onclick="build()">Build Prompt</button>
+  </div>
+
+  <div class="card">
+    <strong>Your prompt</strong>
+    <div id="output">Fill the form and click "Build Prompt".</div>
+    <button onclick="copyPrompt()" id="copyBtn">Copy</button>
+    <a class="btn alt" id="gpt" target="_blank" rel="noopener">Open in ChatGPT</a>
+    <a class="btn alt" id="claude" target="_blank" rel="noopener">Open in Claude</a>
+  </div>
+</div>
+
+<footer>Built by Zulqarnain Khan Jadoon</footer>
+
+<script>
+let current = "";
+
+function build() {
+  const task = document.getElementById("task").value;
+  const topic = document.getElementById("topic").value.trim() || "[add your topic here]";
+  const audience = document.getElementById("audience").value.trim() || "a general professional audience";
+  const tone = document.getElementById("tone").value;
+  const format = document.getElementById("format").value;
+  const words = document.getElementById("words").value || 150;
+
+  current =
+"ROLE: You are an experienced assistant who helps with workplace writing and planning.\n\n" +
+"TASK: " + task + ".\n\n" +
+"CONTEXT: " + topic + "\nAudience: " + audience + "\n\n" +
+"FORMAT: " + format + ".\n\n" +
+"CONSTRAINTS:\n- Tone: " + tone + "\n- Maximum " + words + " words\n- Do not invent facts, numbers, or experience\n- If information is missing, ask me before answering";
+
+  document.getElementById("output").textContent = current;
+  const q = encodeURIComponent(current);
+  document.getElementById("gpt").href = "https://chatgpt.com/?q=" + q;
+  document.getElementById("claude").href = "https://claude.ai/new?q=" + q;
+}
+
+function copyPrompt() {
+  if (!current) { build(); }
+  const btn = document.getElementById("copyBtn");
+  const done = () => { btn.textContent = "Copied!"; setTimeout(() => btn.textContent = "Copy", 1200); };
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(current).then(done).catch(() => { fallback(); done(); });
+  } else { fallback(); done(); }
+}
+
+function fallback() {
+  const ta = document.createElement("textarea");
+  ta.value = current;
+  document.body.appendChild(ta);
+  ta.select();
+  try { document.execCommand("copy"); } catch (e) {}
+  document.body.removeChild(ta);
+}
+</script>
+</body>
+</html>
